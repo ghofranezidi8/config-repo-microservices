@@ -1,0 +1,10 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: portal-service
+
+jwt:
+  secret: votreSecretJWTTresLongEtSecurise123456789
+  expiration: 86400000
