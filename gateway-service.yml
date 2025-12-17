@@ -10,3 +10,87 @@ spring:
         locator:
           enabled: true
           lower-case-service-id: true
+      routes:
+        # Route pour Student Service
+        - id: student-service
+          uri: lb://student-service
+          predicates:
+            - Path=/api/students/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: studentServiceCircuitBreaker
+                fallbackUri: forward:/fallback/students
+
+        # Route pour Course Service - Cours
+        - id: course-service-courses
+          uri: lb://course-service
+          predicates:
+            - Path=/api/courses/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: courseServiceCircuitBreaker
+                fallbackUri: forward:/fallback/courses
+
+        # Route pour Course Service - Examens
+        - id: course-service-exams
+          uri: lb://course-service
+          predicates:
+            - Path=/api/exams/**
+
+        # Route pour Course Service - Inscriptions
+        - id: course-service-enrollments
+          uri: lb://course-service
+          predicates:
+            - Path=/api/enrollments/**
+
+        # Route pour Course Service - Notes
+        - id: course-service-grades
+          uri: lb://course-service
+          predicates:
+            - Path=/api/grades/**
+
+        # Route pour Portal Service (à créer plus tard)
+        - id: portal-service-auth
+          uri: lb://portal-service
+          predicates:
+            - Path=/api/auth/**
+
+        - id: portal-service-portal
+          uri: lb://portal-service
+          predicates:
+            - Path=/api/portal/**
+
+      # Configuration CORS globale
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowed-origins: "*"
+            allowed-methods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowed-headers: "*"
+            allow-credentials: false
+            max-age: 3600
+
+# Configuration Eureka
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true
+
+# Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,gateway
+  endpoint:
+    gateway:
+      enabled: true
