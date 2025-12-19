@@ -6,52 +6,99 @@ spring:
     name: gateway-service
   cloud:
     gateway:
-      mvc:
-        routes:
-          - id: student-service
-            uri: lb://student-service
-            predicates:
-              - Path=/api/students/**
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      routes:
+        # ============================================
+        # ROUTE : STUDENT SERVICE
+        # ============================================
+        - id: student-service
+          uri: lb://student-service
+          predicates:
+            - Path=/api/students/**
 
-          - id: course-service-courses
-            uri: lb://course-service
-            predicates:
-              - Path=/api/courses/**
+        # ============================================
+        # ROUTES : COURSE SERVICE
+        # ============================================
+        - id: course-service-courses
+          uri: lb://course-service
+          predicates:
+            - Path=/api/courses/**
 
-          - id: course-service-exams
-            uri: lb://course-service
-            predicates:
-              - Path=/api/exams/**
+        - id: course-service-exams
+          uri: lb://course-service
+          predicates:
+            - Path=/api/exams/**
 
-          - id: course-service-enrollments
-            uri: lb://course-service
-            predicates:
-              - Path=/api/enrollments/**
+        - id: course-service-enrollments
+          uri: lb://course-service
+          predicates:
+            - Path=/api/enrollments/**
 
-          - id: course-service-grades
-            uri: lb://course-service
-            predicates:
-              - Path=/api/grades/**
+        - id: course-service-grades
+          uri: lb://course-service
+          predicates:
+            - Path=/api/grades/**
 
-          - id: portal-service-auth
-            uri: lb://portal-service
-            predicates:
-              - Path=/api/auth/**
+        # ============================================
+        # ROUTES : PORTAL SERVICE (à créer)
+        # ============================================
+        - id: portal-service-auth
+          uri: lb://portal-service
+          predicates:
+            - Path=/api/auth/**
 
-          - id: portal-service-portal
-            uri: lb://portal-service
-            predicates:
-              - Path=/api/portal/**
+        - id: portal-service-portal
+          uri: lb://portal-service
+          predicates:
+            - Path=/api/portal/**
 
+      # Configuration CORS globale
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowed-origins:
+              - "http://localhost:3000"
+              - "http://localhost:4200"
+            allowed-methods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+              - PATCH
+            allowed-headers: "*"
+            allow-credentials: true
+            max-age: 3600
+
+# Configuration Eureka
 eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka/
+    fetch-registry: true
+    register-with-eureka: true
   instance:
     prefer-ip-address: true
+    lease-renewal-interval-in-seconds: 30
 
+# Configuration Actuator
 management:
   endpoints:
     web:
       exposure:
         include: health,info,metrics,gateway
+  endpoint:
+    gateway:
+      enabled: true
+    health:
+      show-details: always
+
+# Logging
+logging:
+  level:
+    org.springframework.cloud.gateway: INFO
+    reactor.netty: INFO
+    ma.education.gatewayservice: DEBUG
