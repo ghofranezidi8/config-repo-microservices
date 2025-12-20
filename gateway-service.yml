@@ -11,66 +11,79 @@ spring:
           enabled: true
           lower-case-service-id: true
       routes:
-        # STUDENT SERVICE
+        # Route pour Student Service
         - id: student-service
           uri: lb://student-service
           predicates:
             - Path=/api/students/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: studentServiceCircuitBreaker
+                fallbackUri: forward:/fallback/students
 
-        # COURSE SERVICE - Courses
+        # Route pour Course Service - Cours
         - id: course-service-courses
           uri: lb://course-service
           predicates:
             - Path=/api/courses/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: courseServiceCircuitBreaker
+                fallbackUri: forward:/fallback/courses
 
-        # COURSE SERVICE - Exams
+        # Route pour Course Service - Examens
         - id: course-service-exams
           uri: lb://course-service
           predicates:
             - Path=/api/exams/**
 
-        # COURSE SERVICE - Enrollments
+        # Route pour Course Service - Inscriptions
         - id: course-service-enrollments
           uri: lb://course-service
           predicates:
             - Path=/api/enrollments/**
 
-        # COURSE SERVICE - Grades
+        # Route pour Course Service - Notes
         - id: course-service-grades
           uri: lb://course-service
           predicates:
             - Path=/api/grades/**
 
-      # CORS
+        # Route pour Portal Service (à créer plus tard)
+        - id: portal-service-auth
+          uri: lb://portal-service
+          predicates:
+            - Path=/api/auth/**
+
+        - id: portal-service-portal
+          uri: lb://portal-service
+          predicates:
+            - Path=/api/portal/**
+
+      # Configuration CORS globale
       globalcors:
         cors-configurations:
           '[/**]':
-            allowed-origins:
-              - "http://localhost:3000"
-              - "http://localhost:4200"
-              - "file://"
-              - "null"
+            allowed-origins: "*"
             allowed-methods:
               - GET
               - POST
               - PUT
               - DELETE
               - OPTIONS
-              - PATCH
             allowed-headers: "*"
-            allow-credentials: true
+            allow-credentials: false
             max-age: 3600
 
-# Eureka
+# Configuration Eureka
 eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka/
-    fetch-registry: true
-    register-with-eureka: true
   instance:
     prefer-ip-address: true
-    lease-renewal-interval-in-seconds: 30
 
 # Actuator
 management:
@@ -81,12 +94,3 @@ management:
   endpoint:
     gateway:
       enabled: true
-    health:
-      show-details: always
-
-# Logging
-logging:
-  level:
-    org.springframework.cloud.gateway: INFO
-    reactor.netty: INFO
-    ma.education.gatewayservice: DEBUG
