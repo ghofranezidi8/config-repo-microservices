@@ -23,6 +23,13 @@ spring:
               firstBackoff: 50ms
               maxBackoff: 500ms
       routes:
+        # ✅ Route pour servir le HTML depuis portal-service
+        - id: portal-ui
+          uri: lb://portal-service
+          predicates:
+            - Path=/, /*.html, /*.css, /*.js, /static/**
+          filters:
+            - RewritePath=/(?<segment>.*), /${segment}
         # Route pour Student Service
         - id: student-service
           uri: lb://student-service
