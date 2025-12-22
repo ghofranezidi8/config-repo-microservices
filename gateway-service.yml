@@ -12,6 +12,16 @@ spring:
             locator:
               enabled: true
               lower-case-service-id: true
+      default-filters:
+        - PreserveHostHeader
+        - name: Retry
+          args:
+            retries: 3
+            statuses: BAD_GATEWAY,GATEWAY_TIMEOUT
+            methods: GET,POST
+            backoff:
+              firstBackoff: 50ms
+              maxBackoff: 500ms
       routes:
         # Route pour Student Service
         - id: student-service
@@ -76,6 +86,8 @@ spring:
               - DELETE
               - OPTIONS
             allowed-headers: "*"
+            exposed-headers:
+              - Authorization
             allow-credentials: false
             max-age: 3600
 
@@ -96,3 +108,10 @@ management:
   endpoint:
     gateway:
       access: unrestricted
+
+# ✅ AJOUT: Logs de debug
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+    org.springframework.web.server.adapter: DEBUG
+    reactor.netty.http.client: DEBUG
